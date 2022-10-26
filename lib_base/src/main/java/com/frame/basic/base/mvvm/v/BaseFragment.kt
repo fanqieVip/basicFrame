@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.viewbinding.ViewBinding
 import com.google.common.collect.HashBiMap
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
@@ -192,14 +193,14 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
 
     private fun userVisibleHintForAttachToViewPager(visible: Boolean) {
         if (visible) {
-            childFragmentManager.fragments.find {
+            getSafelyChildFragmentManager()?.fragments?.find {
                 it is BaseFragment<*, *> && it.isAttachToViewPager() && it.isViewCreated && it.hasLazyLoad && it.callIsMenuVisible()
             }?.let {
                 it as BaseFragment<*, *>
                 it.userVisibleHint = true
             }
         } else {
-            childFragmentManager.fragments.find {
+            getSafelyChildFragmentManager()?.fragments?.find {
                 it is BaseFragment<*, *> && it.isAttachToViewPager() && it.isViewCreated && it.hasLazyLoad && it.isUIVisible
             }?.let {
                 it as BaseFragment<*, *>
@@ -210,13 +211,13 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
 
     private fun onHiddenChangedForAttachToViewPager(visible: Boolean) {
         if (visible) {
-            childFragmentManager.fragments.find {
+            getSafelyChildFragmentManager()?.fragments?.find {
                 it is BaseFragment<*, *> && !it.isAttachToViewPager() && !it.isHidden
             }?.let {
                 (it as BaseFragment<*, *>).onHiddenChanged(false)
             }
         } else {
-            childFragmentManager.fragments.find {
+            getSafelyChildFragmentManager()?.fragments?.find {
                 it is BaseFragment<*, *> && !it.isAttachToViewPager() && !it.isHidden
             }?.let {
                 (it as BaseFragment<*, *>).onHiddenChanged(true)
@@ -261,7 +262,9 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
     open fun isAttachToViewPager() = false
     private val unicode by lazy { getUnicode(this) }
     open fun onResumeVisible() {
-        UIBarUtils.initStatusAndNavigationBar(requireActivity(), this)
+        activity?.let {
+            UIBarUtils.initStatusAndNavigationBar(it, this)
+        }
         mBindingVM.displayStatus.value = DisplayStatus.SHOWING
     }
 
@@ -275,6 +278,7 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
 
     override fun onPause() {
         super.onPause()
+        mBindingVM.displayStatus.value = DisplayStatus.PAUSING
     }
 
     internal var hasLazyLoad = false
@@ -318,20 +322,25 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
      * Tab控制器
      */
     private val mMainTabControl by lazy {
-        FragmentTabControl(
-            viewLifecycleOwner,
-            childFragmentManager,
-            (this as TabPlugin).getFrameLayout().id
-        )
-            .apply {
-                mFragmentMap.forEach { (t, u) ->
-                    val exitFragment = childFragmentManager.fragments.findLast { it.javaClass == u }
-                        ?: u.newInstance().apply {
-                            bindArguments(t, this)
-                        }
-                    bind(t, exitFragment)
+        val fm = getSafelyChildFragmentManager()
+        if (fm != null){
+            FragmentTabControl(
+                viewLifecycleOwner,
+                fm,
+                (this as TabPlugin).getFrameLayout().id
+            )
+                .apply {
+                    mFragmentMap.forEach { (t, u) ->
+                        val exitFragment = fm.fragments.findLast { it.javaClass == u }
+                            ?: u.newInstance().apply {
+                                bindArguments(t, this)
+                            }
+                        bind(t, exitFragment)
+                    }
                 }
-            }
+        }else{
+            null
+        }
     }
 
     /**
@@ -342,7 +351,7 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
         getTargetTabFragment().value?.let {
             mFragmentMap.inverse()[it]?.let { checkId ->
                 getRadioGroup().bindCheck(checkId)
-                mMainTabControl.show(checkId)
+                mMainTabControl?.show(checkId)
             }
         }
         getTargetTabFragment().observe(viewLifecycleOwner) {
@@ -351,7 +360,7 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
             }
         }
         getRadioGroup().onChecked { checkId ->
-            mMainTabControl.show(checkId)
+            mMainTabControl?.show(checkId)
             getTargetTabFragment().value = mFragmentMap[checkId]
         }
     }
@@ -362,7 +371,9 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
     private fun initIndicatorPlugin() {
         this as IndicatorPlugin<*>
         context?.let {
-            buildIndicator(it, viewLifecycleOwner, childFragmentManager)
+            getSafelyChildFragmentManager()?.let { fm ->
+                buildIndicator(it, viewLifecycleOwner, fm)
+            }
         }
     }
 
@@ -431,24 +442,24 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
     final override fun getContentView() = realContentView
     private val realContentView by lazy { createRootView() }
     override fun statusBarDarkFont(): Boolean? {
-        val host = requireHost()
-        if (host is UIControl<*>) {
+        val host = host
+        if (host != null && host is UIControl<*>) {
             return host.statusBarDarkFont()
         }
         return null
     }
 
     override fun navigationBarColor(): Int? {
-        val host = requireHost()
-        if (host is UIControl<*>) {
+        val host = host
+        if (host != null && host is UIControl<*>) {
             return host.navigationBarColor()
         }
         return null
     }
 
     override fun navigationBarDarkIcon(): Boolean? {
-        val host = requireHost()
-        if (host is UIControl<*>) {
+        val host = host
+        if (host != null && host is UIControl<*>) {
             return host.navigationBarDarkIcon()
         }
         return null
@@ -464,4 +475,24 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
 
     final override fun isRecreated() = isRecreate
     final override fun getLastRootView() = rootView
+
+    /**
+     * 获取安全的ParentFragmentManager，避免IllegalStateException("Fragment " + this + " not associated with a fragment manager.")异常
+     */
+    fun getSafelyParentFragmentManager(): FragmentManager? {
+        if (isAdded){
+            return parentFragmentManager
+        }
+        return null
+    }
+
+    /**
+     * 获取安全的ChildFragmentManager，避免IllegalStateException("Fragment " + this + " has not been attached yet.")异常
+     */
+    fun getSafelyChildFragmentManager(): FragmentManager? {
+        if (isAdded){
+            return childFragmentManager
+        }
+        return null
+    }
 }

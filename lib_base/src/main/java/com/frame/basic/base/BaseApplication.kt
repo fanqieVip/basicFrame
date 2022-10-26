@@ -15,6 +15,7 @@ import com.frame.basic.base.app.ApplicationRebootHelper
 import com.frame.basic.base.app.InitDepend
 import com.frame.basic.base.app.LoadModuleProxy
 import com.frame.basic.base.ktx.TimerManager
+import com.frame.basic.base.utils.CrashHelper
 import com.frame.basic.base.utils.DownloadManager
 import com.frame.basic.base.utils.ProcessUtils
 import com.frame.basic.base.utils.SpUtils
@@ -58,6 +59,8 @@ open class BaseApplication : MultiDexApplication(), LifecycleObserver {
         if (BuildConfig.CRASH_REBOOT){
             registerActivityLifecycleCallbacks(ApplicationRebootHelper())
         }
+        //全局捕获一些非人为因素造成的异常
+        CrashHelper.filterException()
         mLoadModuleProxy.onCreate(this)
         // 策略初始化第三方依赖
         initDepends()

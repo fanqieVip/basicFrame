@@ -170,16 +170,22 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
      * Tab控制器
      */
     private val mMainTabControl by lazy {
-        FragmentTabControl(viewLifecycleOwner, childFragmentManager, (this as TabPlugin).getFrameLayout().id)
-            .apply {
-                mFragmentMap.forEach { (t, u) ->
-                    val exitFragment = childFragmentManager.fragments.findLast { it.javaClass == u }
-                        ?: u.newInstance().apply {
-                            bindArguments(t, this)
-                        }
-                    bind(t, exitFragment)
+        val fm = getSafelyChildFragmentManager()
+        if (fm != null){
+            FragmentTabControl(viewLifecycleOwner, fm, (this as TabPlugin).getFrameLayout().id)
+                .apply {
+                    mFragmentMap.forEach { (t, u) ->
+                        val exitFragment = fm.fragments.findLast { it.javaClass == u }
+                            ?: u.newInstance().apply {
+                                bindArguments(t, this)
+                            }
+                        bind(t, exitFragment)
+                    }
                 }
-            }
+        }else{
+            null
+        }
+
     }
 
     /**
@@ -190,7 +196,7 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
         getTargetTabFragment().value?.let {
             mFragmentMap.inverse()[it]?.let { checkId ->
                 getRadioGroup().bindCheck(checkId)
-                mMainTabControl.show(checkId)
+                mMainTabControl?.show(checkId)
             }
         }
         getTargetTabFragment().observe(viewLifecycleOwner) {
@@ -199,7 +205,7 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
             }
         }
         getRadioGroup().onChecked { checkId ->
-            mMainTabControl.show(checkId)
+            mMainTabControl?.show(checkId)
             getTargetTabFragment().value = mFragmentMap[checkId]
         }
     }
@@ -210,7 +216,9 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
     private fun initIndicatorPlugin() {
         this as IndicatorPlugin<*>
         context?.let {
-            buildIndicator(it, viewLifecycleOwner, childFragmentManager)
+            getSafelyChildFragmentManager()?.let { fm ->
+                buildIndicator(it, viewLifecycleOwner, fm)
+            }
         }
     }
 
@@ -265,20 +273,29 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
         super.onStop()
         mBindingVM.displayStatus.value = DisplayStatus.HIDDEN
     }
+
+    override fun onPause() {
+        super.onPause()
+        mBindingVM.displayStatus.value = DisplayStatus.PAUSING
+    }
     override fun onResume() {
         super.onResume()
         mBindingVM.displayStatus.value = DisplayStatus.SHOWING
         recreateding = false
         //todo Dialog设置StatusBar, NavigationBar亮色模式无效，等待解决
-        UIBarUtils.initStatusAndNavigationBar(requireActivity(), this)
+        activity?.let {
+            UIBarUtils.initStatusAndNavigationBar(it, this)
+        }
     }
 
     override fun onCancel(dialog: DialogInterface) {
         super.onCancel(dialog)
         //关闭时恢复界面Host的状态栏
-        val host = requireHost()
-        if (host is UIControl<*>) {
-            UIBarUtils.initStatusAndNavigationBar(requireActivity(), host)
+        val host = host
+        if (host != null && host is UIControl<*>) {
+            activity?.let {
+                UIBarUtils.initStatusAndNavigationBar(it, host)
+            }
         }
 
     }
@@ -348,9 +365,6 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
                 //适配挖孔屏, 避免界面被顶到孔孔下边
                 it.layoutInDisplayCutoutMode =
                     WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-            } else {
-                if (NotchUtils.hasNotchInScreen(requireActivity())) {
-                }
             }
             dialog?.window?.attributes = it
         }
@@ -463,24 +477,24 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
     fun isOnDisMissing() = onDisMissing
 
     override fun statusBarDarkFont(): Boolean? {
-        val host = requireHost()
-        if (host is UIControl<*>) {
+        val host = host
+        if (host != null && host is UIControl<*>) {
             return host.statusBarDarkFont()
         }
         return null
     }
 
     override fun navigationBarColor(): Int? {
-        val host = requireHost()
-        if (host is UIControl<*>) {
+        val host = host
+        if (host != null && host is UIControl<*>) {
             return host.navigationBarColor()
         }
         return null
     }
 
     override fun navigationBarDarkIcon(): Boolean? {
-        val host = requireHost()
-        if (host is UIControl<*>) {
+        val host = host
+        if (host != null && host is UIControl<*>) {
             return host.navigationBarDarkIcon()
         }
         return null
@@ -497,4 +511,23 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
     final override fun isRecreated() = isRecreate
 
     final override fun getLastRootView() = rootView
+
+    /**
+     * 获取安全的ParentFragmentManager，避免IllegalStateException("Fragment " + this + " not associated with a fragment manager.")异常
+     */
+    fun getSafelyParentFragmentManager(): FragmentManager? {
+        if (isAdded){
+            return parentFragmentManager
+        }
+        return null
+    }
+    /**
+     * 获取安全的ChildFragmentManager，避免IllegalStateException("Fragment " + this + " has not been attached yet.")异常
+     */
+    fun getSafelyChildFragmentManager(): FragmentManager? {
+        if (isAdded){
+            return childFragmentManager
+        }
+        return null
+    }
 }

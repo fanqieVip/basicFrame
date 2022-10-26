@@ -146,7 +146,9 @@ object BindingReflex {
                     continue
                 }
                 if (ViewModel::class.java.isAssignableFrom(tClass)) {
-                    return ViewModelProvider(fragment.requireActivity())[tClass as Class<VM>]
+                    if (fragment.activity != null){
+                        return ViewModelProvider(fragment.requireActivity())[tClass as Class<VM>]
+                    }
                 }
             }
             return reflexViewModelShared<VM>(aClass.superclass, fragment)

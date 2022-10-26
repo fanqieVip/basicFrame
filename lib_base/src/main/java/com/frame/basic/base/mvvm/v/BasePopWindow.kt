@@ -122,8 +122,8 @@ abstract class BasePopWindow<VB : ViewBinding, VM : BaseVM> : BaseDialog<VB, VM>
                 it.targetViewHeight = 0
                 it.screenWidth = getDisplayWidth()
                 it.screenHeight = getDisplayHeight()
-                val host = requireHost()
-                if (host is RecreateControl) {
+                val host = host
+                if (host != null && host is RecreateControl) {
                     val targetView =
                         host.getLastRootView().findViewById<View>(it.targetViewId)
                     if (targetView == null) {

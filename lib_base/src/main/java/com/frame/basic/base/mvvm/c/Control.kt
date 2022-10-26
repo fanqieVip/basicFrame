@@ -33,6 +33,7 @@ class UIStatusInfo(val uiStatus: UIStatus, val error: Int = 0, val msg: String? 
  * 界面显示状态
  */
 enum class DisplayStatus {
+    PAUSING,
     SHOWING,
     HIDDEN
 }
