@@ -34,4 +34,9 @@
         <item name="android:windowEnterAnimation">@anim/base_dialog_slide_in_from_left</item>
         <item name="android:windowExitAnimation">@anim/base_dialog_slide_out_to_left</item>
     </style>
+    
+    <!-- 禁止弹窗灰度透明背景 -->
+    <style name="base_dialog_dim_dis_enabled_dialog" parent="@android:style/Theme.Dialog">
+        <item name="android:backgroundDimEnabled">true</item><!--activity不变暗-->
+    </style>
 </resources>
