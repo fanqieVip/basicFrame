@@ -647,6 +647,7 @@ interface WebViewPlugin {
                 override fun onProgressChanged(view: WebView?, newProgress: Int) {
                     super.onProgressChanged(view, newProgress)
                     if (newProgress == 100){
+                        it.settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
                         it.settings.blockNetworkImage = false
                     }
                     onProgressChanged(newProgress)
@@ -771,6 +772,8 @@ interface WebViewPlugin {
                 }
 
                 private fun overrideUrlLoading(view: WebView?, requestUrl: String): Boolean {
+                    view?.settings?.blockNetworkImage = true
+                    view?.settings?.cacheMode = WebSettings.LOAD_NO_CACHE
                     if (view == null) {
                         return false
                     }
