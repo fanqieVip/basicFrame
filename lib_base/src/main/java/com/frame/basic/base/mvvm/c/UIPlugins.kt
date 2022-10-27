@@ -603,6 +603,7 @@ interface WebViewPlugin {
                 allowFileAccess = true
                 databaseEnabled = true
                 setAppCacheEnabled(true)
+                blockNetworkImage = true
                 if (multipleWindow != null) {
                     setSupportMultipleWindows(true)
                     javaScriptCanOpenWindowsAutomatically = true
@@ -645,6 +646,9 @@ interface WebViewPlugin {
 
                 override fun onProgressChanged(view: WebView?, newProgress: Int) {
                     super.onProgressChanged(view, newProgress)
+                    if (newProgress == 100){
+                        it.settings.blockNetworkImage = false
+                    }
                     onProgressChanged(newProgress)
                 }
 
