@@ -305,6 +305,11 @@ abstract class BaseActivity<VB : ViewBinding, VM : BaseVM> : AppCompatActivity()
         recreateding = false
         UIBarUtils.initStatusAndNavigationBar(this, this)
     }
+    
+    override fun onPause() {
+        super.onPause()
+        mBindingVM.displayStatus.value = DisplayStatus.PAUSING
+    }
 
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         if (autoHideSoftInput()){
