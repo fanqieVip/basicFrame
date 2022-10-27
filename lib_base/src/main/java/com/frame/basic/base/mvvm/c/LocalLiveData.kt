@@ -3,6 +3,7 @@ package com.frame.basic.base.mvvm.c
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import com.blankj.utilcode.util.GsonUtils
 import com.frame.basic.base.mvvm.vm.CoreVM
 import com.frame.basic.base.utils.SpUtils
@@ -87,14 +88,16 @@ class LocalMutableLiveDataLazy<T : Any>(
                         }
                     }
                     mainHandler.postAtFrontOfQueue {
-                        vm?.safeObserveForever(this) {
-                            //同步到本地
-                            if (it == null) {
-                                SpUtils.putString(key, null)
-                            } else {
-                                SpUtils.putString(key, GsonUtils.toJson(it))
+                        vm?.safeObserveForever(this, object :Observer<Any?>{ //绝不能用lamble表达式，编译时会生成单例，有可能造成IllegalArgumentException("Cannot add the same observer with different lifecycles")异常
+                            override fun onChanged(t: Any?) {
+                                //同步到本地
+                                if (t == null) {
+                                    SpUtils.putString(key, null)
+                                } else {
+                                    SpUtils.putString(key, GsonUtils.toJson(t))
+                                }
                             }
-                        }
+                        })
                         vm = null
                     }
                 }
