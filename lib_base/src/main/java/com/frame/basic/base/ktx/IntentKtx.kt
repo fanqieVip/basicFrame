@@ -11,7 +11,7 @@ import com.frame.basic.base.utils.getUnicode
 internal val functionExtras by lazy { HashMap<String, Function<*>>() }
 internal val functionExtraTag by lazy { "functionExtraTag" }
 
-internal fun getFunctionExtraKey(key: String, value: Function<*>) = "${functionExtraTag}_${value.toString()}_${value.javaClass.name}_${key}"
+internal fun getFunctionExtraKey(owner: LifecycleOwner, key: String, value: Function<*>) = "${functionExtraTag}_${getUnicode(owner)}_${value.toString()}_${value.javaClass.name}_${key}"
 
 /**
  * 仿Eventbus回调方式，无序列化问题，可直接访问当前对象
@@ -19,7 +19,7 @@ internal fun getFunctionExtraKey(key: String, value: Function<*>) = "${functionE
  *       2.app异常重启恢复时，由于回调存在内存，会造成丢失
  */
 fun Intent.putExtra(owner: LifecycleOwner, key: String, value: Function<*>) {
-    val realKey = getFunctionExtraKey(key, value)
+    val realKey = getFunctionExtraKey(owner, key, value)
     putExtra(key, realKey)
     functionExtras[realKey] = value
     owner.lifecycle.addObserver(object : LifecycleEventObserver {
