@@ -11,8 +11,7 @@ import com.frame.basic.base.utils.getUnicode
 internal val functionExtras by lazy { HashMap<String, Function<*>>() }
 internal val functionExtraTag by lazy { "functionExtraTag" }
 
-internal fun getFunctionExtraKey(key: String, value: Function<*>) =
-    "${functionExtraTag}_${getUnicode(value)}_${key}"
+internal fun getFunctionExtraKey(key: String, value: Function<*>) = "${functionExtraTag}_${value.toString()}_${value.javaClass.name}_${key}"
 
 /**
  * 仿Eventbus回调方式，无序列化问题，可直接访问当前对象
