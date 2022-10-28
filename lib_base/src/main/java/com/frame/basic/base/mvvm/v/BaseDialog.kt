@@ -1,4 +1,4 @@
-package com.yoc.basic.base.mvvm.v
+package com.frame.basic.base.mvvm.v
 
 import android.content.DialogInterface
 import android.graphics.Color
@@ -14,13 +14,13 @@ import androidx.viewbinding.ViewBinding
 import com.blankj.utilcode.util.ScreenUtils
 import com.google.common.collect.HashBiMap
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
-import com.yoc.basic.base.R
-import com.yoc.basic.base.ktx.bindCheck
-import com.yoc.basic.base.ktx.onChecked
-import com.yoc.basic.base.mvvm.c.*
-import com.yoc.basic.base.mvvm.v.base.ContainerStyle
-import com.yoc.basic.base.mvvm.vm.BaseVM
-import com.yoc.basic.base.utils.*
+import com.frame.basic.base.R
+import com.frame.basic.base.ktx.bindCheck
+import com.frame.basic.base.ktx.onChecked
+import com.frame.basic.base.mvvm.c.*
+import com.frame.basic.base.mvvm.v.base.ContainerStyle
+import com.frame.basic.base.mvvm.vm.BaseVM
+import com.frame.basic.base.utils.*
 
 /**
  * @Description:
@@ -49,6 +49,7 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
             setStyle(STYLE_NO_FRAME, R.style.base_dialog_dim_dis_enabled_dialog)
         }
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
