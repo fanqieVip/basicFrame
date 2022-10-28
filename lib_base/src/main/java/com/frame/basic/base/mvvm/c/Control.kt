@@ -354,7 +354,7 @@ interface ArgumentsControl<F : Fragment> {
      */
     fun putExtra(owner: LifecycleOwner, key: String, value: Function<*>): F {
         this as F
-        val realKey = getFunctionExtraKey(key, value)
+        val realKey = getFunctionExtraKey(owner, key, value)
         getExtras().putString(key, realKey)
         functionExtras[realKey] = value
         owner.lifecycle.addObserver(object : LifecycleEventObserver {
