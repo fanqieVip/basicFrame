@@ -36,15 +36,15 @@ import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.provider.BaseItemProvider
 import com.chad.library.adapter.base.viewholder.BaseDataBindingHolder
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
+import com.frame.basic.base.ktx.bindCurrentItem
+import com.frame.basic.base.ktx.onClick
+import com.frame.basic.base.widget.NestRadioGroup
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.CollapsingToolbarLayout
 import com.google.common.collect.HashBiMap
 import com.scwang.smart.refresh.footer.ClassicsFooter
 import com.scwang.smart.refresh.header.ClassicsHeader
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
-import com.frame.basic.base.ktx.bindCurrentItem
-import com.frame.basic.base.ktx.onClick
-import com.frame.basic.base.widget.NestRadioGroup
 import net.lucode.hackware.magicindicator.MagicIndicator
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.CommonNavigator
 import net.lucode.hackware.magicindicator.buildins.commonnavigator.abs.CommonNavigatorAdapter
@@ -646,8 +646,7 @@ interface WebViewPlugin {
 
                 override fun onProgressChanged(view: WebView?, newProgress: Int) {
                     super.onProgressChanged(view, newProgress)
-                    if (newProgress == 100){
-                        it.settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK
+                    if (newProgress == 100) {
                         it.settings.blockNetworkImage = false
                     }
                     onProgressChanged(newProgress)
@@ -772,8 +771,6 @@ interface WebViewPlugin {
                 }
 
                 private fun overrideUrlLoading(view: WebView?, requestUrl: String): Boolean {
-                    view?.settings?.blockNetworkImage = true
-                    view?.settings?.cacheMode = WebSettings.LOAD_NO_CACHE
                     if (view == null) {
                         return false
                     }
