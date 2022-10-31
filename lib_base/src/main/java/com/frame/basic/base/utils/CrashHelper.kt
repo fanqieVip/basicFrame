@@ -7,13 +7,22 @@ import android.os.Looper
 import android.system.ErrnoException
 import java.util.concurrent.TimeoutException
 
+/**
+ * @Description:    未知异常过滤器
+ * @Author:         fanj
+ * @CreateDate:     2022/10/18 10:47
+ * @Version:
+ */
 object CrashHelper {
+
     /**
      * 执行异常过滤
      */
     internal fun filterException() {
-        val defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
+        //修复cpu休眠诱发的虚拟机gc回收超时异常
+        fixWatchdogDaemon()
         //过滤子线程异常
+        val defaultUncaughtExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
         Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
             //过滤cpu休眠诱发的虚拟机gc回收超时异常
             if (!(thread.name == "FinalizerWatchdogDaemon" && throwable is TimeoutException)) {
@@ -44,5 +53,19 @@ object CrashHelper {
             }
         }
     }
-
+    /**
+     * 修复cpu休眠诱发的虚拟机gc回收超时异常
+     */
+    private fun fixWatchdogDaemon() {
+        try {
+            val clazz = Class.forName ("java.lang.Daemons\$FinalizerWatchdogDaemon")
+            val method = clazz.superclass.getDeclaredMethod("stop")
+            method.isAccessible = true
+            val field = clazz.getDeclaredField ("INSTANCE")
+            field.isAccessible = true
+            method.invoke(field.get(null))
+        } catch (e:Throwable) {
+            e.printStackTrace()
+        }
+    }
 }
