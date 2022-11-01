@@ -1,10 +1,9 @@
 package com.frame.module.demo.activity.main
 
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import com.frame.basic.base.BaseApplication
-import com.frame.basic.base.ktx.watch
+import com.frame.basic.base.ktx.WatchLiveData
 import com.frame.basic.base.mvvm.c.getViewModel
 import com.frame.basic.base.mvvm.vm.BaseVM
 import com.frame.basic.base.mvvm.vm.VMCall
@@ -31,10 +30,7 @@ class MainVM @Inject constructor(
 
     //watch语法，用于观察指定的VM对象，当指定的VM对象更新了，自己可以自动处理自己的数据，如一个用户在多个列表中有在线状态，
     //当因为某种动作触发状态变更时，多个关联列表可以自动响应
-    val testWatch = MutableLiveData<Int>().watch(
-        this,
-        getViewModel<ShareViewModelsKeepVM>()?.data
-    ) { data, self ->
+    val testWatch = WatchLiveData<Int>().watch(getViewModel<ShareViewModelsKeepVM>()?.data) { data, self ->
         self.postValue(data)
     }
 
