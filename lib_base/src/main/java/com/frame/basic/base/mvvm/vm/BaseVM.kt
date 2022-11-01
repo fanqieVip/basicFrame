@@ -4,12 +4,12 @@ import android.accounts.NetworkErrorException
 import android.net.ParseException
 import androidx.annotation.MainThread
 import androidx.lifecycle.*
-import com.google.gson.JsonSyntaxException
-import com.google.gson.stream.MalformedJsonException
 import com.frame.basic.base.ktx.functionExtraTag
 import com.frame.basic.base.ktx.functionExtras
 import com.frame.basic.base.mvvm.c.*
 import com.frame.basic.base.mvvm.v.LocationInfo
+import com.google.gson.JsonSyntaxException
+import com.google.gson.stream.MalformedJsonException
 import kotlinx.coroutines.*
 import org.json.JSONException
 import retrofit2.HttpException
@@ -25,6 +25,7 @@ import javax.net.ssl.SSLException
  * @CreateDate:     2021/11/5 10:14
  */
 abstract class BaseVM(private val handle: SavedStateHandle) : CoreVM(), VMControl {
+    internal val watchLiveDataMap by lazy { HashMap<MutableLiveData<*>,ArrayList<Observer<*>>>() }
     internal val uiStatus by savedStateLiveData<UIStatusInfo>("VMControl_uiStatus")
     internal val refreshLayoutState by savedStateLiveData<RefreshLayoutStatus>("VMControl_refreshLayoutState")
     internal val popLoadingStatus by savedStateLiveData<PopLoadingStatus>("VMControl_popLoadingStatus")
@@ -88,6 +89,31 @@ abstract class BaseVM(private val handle: SavedStateHandle) : CoreVM(), VMContro
         key: String,
         initializer: T? = null
     ): Lazy<MutableLiveData<T>> = SavedStateHandleMutableLiveDataLazy(key, handle, initializer)
+
+    override fun executeForever(owner: LifecycleOwner) {
+        super.executeForever(owner)
+        if (watchLiveDataMap.isEmpty()){
+            return
+        }
+        watchLiveDataMap.forEach { (observeLV, targetWatchData) ->
+            targetWatchData.forEach {
+                observeLV.observe(owner, it as Observer<in Any>)
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        if (watchLiveDataMap.isEmpty()){
+            return
+        }
+        watchLiveDataMap.forEach { (observeLV, targetWatchData) ->
+            targetWatchData.forEach {
+                observeLV.removeObserver(it as Observer<in Any>)
+            }
+        }
+        watchLiveDataMap.clear()
+    }
 }
 
 internal class SavedStateHandleMutableLiveDataLazy<T : Any>(
