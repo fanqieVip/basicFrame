@@ -7,7 +7,12 @@ import androidx.lifecycle.*
 /**
  * LiveData观察者，可自定义观察对象，及时更新自己
  */
-class WatchLiveData<T>(initData: T? = null) : MutableLiveData<T>(initData) {
+class WatchLiveData<T>(initData: T? = null) : MutableLiveData<T>() {
+    init {
+        if (initData != null){
+            postValue(initData)
+        }
+    }
     private val watchData by lazy { HashMap<MutableLiveData<*>, Observer<*>>() }
 
     /**
