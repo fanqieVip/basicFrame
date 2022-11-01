@@ -10,6 +10,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.viewbinding.ViewBinding
+import com.frame.basic.base.ktx.WatchLiveData
 import com.frame.basic.base.ktx.functionExtras
 import com.frame.basic.base.ktx.getFunctionExtraKey
 import java.io.Serializable
@@ -77,7 +78,16 @@ interface VMControl {
      * 1.适合执行用户不可见的任务
      * 2.在onRefresh后执行
      */
-    fun executeForever(owner: LifecycleOwner) {}
+    fun executeForever(owner: LifecycleOwner) {
+        //自动处理WatchLiveData的生命周期
+        this.javaClass.declaredFields.forEach { field ->
+            field.isAccessible = true
+            val data = field.get(this)
+            if(data is WatchLiveData<*>){
+                data.attachLifecycleOwner(owner)
+            }
+        }
+    }
 
     /**
      * 加载成功
