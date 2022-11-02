@@ -25,7 +25,7 @@ import com.frame.basic.base.utils.*
  * @since 8/27/20
  */
 abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIControl<VB>,
-    ContainerStyle, RecreateControl, ArgumentsControl<BaseFragment<*, *>> {
+    ContainerStyle, RecreateControl, ArgumentsControl<BaseFragment<*, *>>, VMLifecycle {
 
     protected val mBinding: VB by lazy(mode = LazyThreadSafetyMode.NONE) {
         BindingReflex.reflexViewBinding<VB>(javaClass, layoutInflater).apply {
@@ -51,6 +51,7 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        initVmLifecycleOwner(viewLifecycleOwner)
         //获取重建状态
         isRecreate = ViewRecreateHelper.getRecreateStatus(this, savedInstanceState)
         isLoad = ViewRecreateHelper.getLoadStatus(this, savedInstanceState)
