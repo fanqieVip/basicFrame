@@ -29,7 +29,7 @@ import com.frame.basic.base.utils.*
  * @since 8/27/20
  */
 abstract class BaseActivity<VB : ViewBinding, VM : BaseVM> : AppCompatActivity(),
-    UIControl<VB>, ContainerStyle, RecreateControl {
+    UIControl<VB>, ContainerStyle, RecreateControl, VMLifecycle {
     protected val mBinding: VB by lazy(mode = LazyThreadSafetyMode.NONE) {
         BindingReflex.reflexViewBinding<VB>(javaClass, layoutInflater).apply {
             if (this is ViewDataBinding) {
@@ -43,6 +43,7 @@ abstract class BaseActivity<VB : ViewBinding, VM : BaseVM> : AppCompatActivity()
     private var recreateding = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        initVmLifecycleOwner(this)
         fullScreen()
         //获取重建状态
         isRecreate = ViewRecreateHelper.getRecreateStatus(this, savedInstanceState)
@@ -53,9 +54,9 @@ abstract class BaseActivity<VB : ViewBinding, VM : BaseVM> : AppCompatActivity()
         if (inputFitKeyBoard()){
             SoftHideKeyBoardUtil.assistActivity(this, true)
         }
+        initVMControlObserve()
         mBinding.initView()
         mBinding.initListener()
-        initVMControlObserve()
         if (!isRecreate && mBindingVM.autoOnRefresh()) {
             mBindingVM.loading()
             mBindingVM.onRefresh(this)
@@ -305,12 +306,10 @@ abstract class BaseActivity<VB : ViewBinding, VM : BaseVM> : AppCompatActivity()
         recreateding = false
         UIBarUtils.initStatusAndNavigationBar(this, this)
     }
-    
     override fun onPause() {
         super.onPause()
         mBindingVM.displayStatus.value = DisplayStatus.PAUSING
     }
-
     override fun dispatchTouchEvent(ev: MotionEvent?): Boolean {
         if (autoHideSoftInput()){
             if (ev?.action == MotionEvent.ACTION_DOWN) {
