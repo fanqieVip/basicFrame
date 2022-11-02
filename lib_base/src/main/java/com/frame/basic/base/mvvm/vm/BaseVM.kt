@@ -1,8 +1,10 @@
 package com.frame.basic.base.mvvm.vm
 
 import android.accounts.NetworkErrorException
+import android.app.Activity
 import android.net.ParseException
 import androidx.annotation.MainThread
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 import com.frame.basic.base.ktx.functionExtraTag
 import com.frame.basic.base.ktx.functionExtras
@@ -25,7 +27,6 @@ import javax.net.ssl.SSLException
  * @CreateDate:     2021/11/5 10:14
  */
 abstract class BaseVM(private val handle: SavedStateHandle) : CoreVM(), VMControl {
-    internal val watchLiveDataMap by lazy { HashMap<MutableLiveData<*>,ArrayList<Observer<*>>>() }
     internal val uiStatus by savedStateLiveData<UIStatusInfo>("VMControl_uiStatus")
     internal val refreshLayoutState by savedStateLiveData<RefreshLayoutStatus>("VMControl_refreshLayoutState")
     internal val popLoadingStatus by savedStateLiveData<PopLoadingStatus>("VMControl_popLoadingStatus")
@@ -89,31 +90,6 @@ abstract class BaseVM(private val handle: SavedStateHandle) : CoreVM(), VMContro
         key: String,
         initializer: T? = null
     ): Lazy<MutableLiveData<T>> = SavedStateHandleMutableLiveDataLazy(key, handle, initializer)
-
-    override fun executeForever(owner: LifecycleOwner) {
-        super.executeForever(owner)
-        if (watchLiveDataMap.isEmpty()){
-            return
-        }
-        watchLiveDataMap.forEach { (observeLV, targetWatchData) ->
-            targetWatchData.forEach {
-                observeLV.observe(owner, it as Observer<in Any>)
-            }
-        }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        if (watchLiveDataMap.isEmpty()){
-            return
-        }
-        watchLiveDataMap.forEach { (observeLV, targetWatchData) ->
-            targetWatchData.forEach {
-                observeLV.removeObserver(it as Observer<in Any>)
-            }
-        }
-        watchLiveDataMap.clear()
-    }
 }
 
 internal class SavedStateHandleMutableLiveDataLazy<T : Any>(
@@ -163,11 +139,13 @@ internal class SavedStateHandleMutableLiveDataLazy<T : Any>(
 /**
  * 核心ViewModel
  */
-open class CoreVM : ViewModel() {
+open class CoreVM : ViewModel(), VMLifecycle {
+    internal val watchLiveDataMap by lazy { HashMap<MutableLiveData<*>,ArrayList<Observer<*>>>() }
     private val jobs by lazy { ArrayList<JobControl>() }
     private val observeForeverLiveDatas by lazy { HashMap<LiveData<*>, ArrayList<Observer<in Any?>>?>() }
     override fun onCleared() {
         super.onCleared()
+        watchLiveDataMap.clear()
         //移除掉observeForever的LiveData避免内存泄漏
         removeSafeObserveForever()
         //结束协程
@@ -270,6 +248,40 @@ open class CoreVM : ViewModel() {
         }
         jobs.add(JobControl(job, bindLifecycle))
         return job
+    }
+    final override fun initVmLifecycleOwner(owner: LifecycleOwner) {
+        if (watchLiveDataMap.isNotEmpty()){
+            watchLiveDataMap.forEach { (observeLV, targetWatchData) ->
+                targetWatchData.forEach {
+                    val observer = it as Observer<in Any>
+                    try {
+                        observeLV.observe(owner, observer)
+                    }catch (e: IllegalArgumentException){
+                        //避免跨页面共享VM时，出现一个Observer实例绑定多个owner的异常，只需要保证这种场景有一个绑定有效即可
+                        // 之所以不采用绑定一次之后清空watchLiveDataMap避免该异常，主要是为了解决单一页面重建后无法再绑定的问题
+                        if (e.message?.equals("Cannot add the same observer with different lifecycles") == false){
+                            throw e
+                        }
+                    }
+                }
+                owner.lifecycle.addObserver(object : LifecycleEventObserver{
+                    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+                        when (event) {
+                            Lifecycle.Event.ON_PAUSE -> {
+                                if ((source is Activity && source.isFinishing) || (source is Fragment && source.activity != null && source.requireActivity().isFinishing)) {
+                                    observeLV.removeObservers(owner)
+                                }
+                            }
+                            Lifecycle.Event.ON_DESTROY -> {
+                                observeLV.removeObservers(owner)
+                            }
+                            else -> {}
+                        }
+                    }
+
+                })
+            }
+        }
     }
 }
 
