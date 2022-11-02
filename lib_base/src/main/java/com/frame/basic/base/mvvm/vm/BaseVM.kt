@@ -115,7 +115,7 @@ internal class SavedStateHandleMutableLiveDataLazy<T : Any>(
         val functionExtraKey = handle.get<Any>(key)
         if (functionExtraKey != null && functionExtraKey is String && functionExtraKey.startsWith(functionExtraTag)){
             //全局存储的Function的key
-            val function = functionExtras[functionExtraKey]
+            val function = functionExtras.remove(functionExtraKey)
             return if(function != null){
                 MutableLiveData(function as T)
             }else{
