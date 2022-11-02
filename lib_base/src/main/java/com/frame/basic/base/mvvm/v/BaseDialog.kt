@@ -29,7 +29,7 @@ import com.frame.basic.base.utils.*
  * @Version:        1.0.2
  */
 abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIControl<VB>,
-    ContainerStyle, RecreateControl, ArgumentsControl<BaseDialog<*, *>> {
+    ContainerStyle, RecreateControl, ArgumentsControl<BaseDialog<*, *>>, VMLifecycle {
     protected val mBinding: VB by lazy(mode = LazyThreadSafetyMode.NONE) {
         BindingReflex.reflexViewBinding<VB>(javaClass, layoutInflater).apply {
             if (this is ViewDataBinding) {
@@ -55,6 +55,7 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        initVmLifecycleOwner(viewLifecycleOwner)
         //获取重建状态
         isRecreate = ViewRecreateHelper.getRecreateStatus(this, savedInstanceState)
         initWindowStyleBefore()
