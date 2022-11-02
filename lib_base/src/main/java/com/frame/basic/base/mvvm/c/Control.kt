@@ -9,9 +9,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ViewModelLazy
 import androidx.viewbinding.ViewBinding
 import com.frame.basic.base.ktx.functionExtras
 import com.frame.basic.base.ktx.getFunctionExtraKey
+import com.frame.basic.base.mvvm.vm.CoreVM
 import java.io.Serializable
 
 /**
@@ -51,6 +53,29 @@ enum class RefreshLayoutStatus {
     LOAD_MORE,
     NO_MORE,
     STOP
+}
+
+interface VMLifecycle {
+    fun initVmLifecycleOwner(owner: LifecycleOwner){
+        javaClass.declaredFields.forEach { field ->
+            field.isAccessible = true
+            when(val fieldM =  field.get(this)){
+                is ViewModelLazy<*> -> {
+                    val vm = fieldM.value
+                    if (vm is CoreVM){
+                        vm.initVmLifecycleOwner(owner)
+                    }
+                }
+                is ShareViewModelLazy<*> -> {
+                    val vm = fieldM.value
+                    if (vm is CoreVM){
+                        vm.initVmLifecycleOwner(owner)
+                    }
+                }
+                else ->{}
+            }
+        }
+    }
 }
 
 /**
