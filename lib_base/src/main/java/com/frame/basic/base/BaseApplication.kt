@@ -30,7 +30,7 @@ import kotlin.system.measureTimeMillis
  * @since 4/24/21 5:30 PM
  */
 open class BaseApplication : MultiDexApplication(), LifecycleObserver {
-    private val mCoroutineScope by lazy(mode = LazyThreadSafetyMode.NONE) { MainScope() }
+    internal val mCoroutineScope by lazy(mode = LazyThreadSafetyMode.NONE) { MainScope() }
 
     private val mLoadModuleProxy by lazy(mode = LazyThreadSafetyMode.NONE) { LoadModuleProxy() }
 
