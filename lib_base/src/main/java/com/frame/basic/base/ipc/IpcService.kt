@@ -3,7 +3,13 @@ package com.frame.basic.base.ipc
 import android.app.Service
 import android.content.Intent
 import android.os.*
+import com.frame.basic.base.BaseApplication
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import java.io.Serializable
+import java.util.concurrent.LinkedBlockingQueue
 
 /**
  * @Description:    IPC通讯服务
@@ -12,23 +18,13 @@ import java.io.Serializable
  * @Version:
  */
 open class IpcService : Service() {
+    private val replyBlockQueue by lazy { LinkedBlockingQueue<ReplyMessage>() }
+    private val replyChannel by lazy { Channel<ReplyMessage>() }
     private val serverHandler by lazy {
         object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
                 if (msg.what == IpcHelper.MSG_FROM_CLIENT) {
-                    val result = executeMethod(msg.data)
-                    //得到发送者对象，方便进行回调
-                    val messenger = msg.replyTo
-                    val message = Message.obtain(null, IpcHelper.MSG_FROM_SERVER).apply {
-                        data = Bundle().apply {
-                            putSerializable("result", result as? Serializable?)
-                        }
-                    }
-                    try {
-                        messenger.send(message)
-                    } catch (e: RemoteException) {
-                        e.printStackTrace()
-                    }
+                    replyBlockQueue.offer(ReplyMessage(msg.data, msg.replyTo))
                 }
             }
         }
@@ -48,5 +44,43 @@ open class IpcService : Service() {
             return method?.invoke(this, *parameterValues.toTypedArray()) ?: null
         }
         return null
+    }
+
+    private class ReplyMessage(val data: Bundle, val messenger: Messenger)
+
+    private var job: Job? = null
+    override fun onCreate() {
+        super.onCreate()
+        job = BaseApplication.application.mCoroutineScope.launch {
+            launch(Dispatchers.IO) {
+                while (true) {
+                    replyChannel.send(replyBlockQueue.take())
+                }
+            }
+            launch(Dispatchers.IO) {
+                while (true) {
+                    val replyMessage = replyChannel.receive()
+                    launch(Dispatchers.Default) {
+                        val result = executeMethod(replyMessage.data)
+                        val messenger = replyMessage.messenger
+                        val message = Message.obtain(null, IpcHelper.MSG_FROM_SERVER).apply {
+                            data = Bundle().apply {
+                                putSerializable("result", result as? Serializable?)
+                            }
+                        }
+                        try {
+                            messenger.send(message)
+                        } catch (e: RemoteException) {
+                            e.printStackTrace()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        job?.cancel()
+        super.onDestroy()
     }
 }
