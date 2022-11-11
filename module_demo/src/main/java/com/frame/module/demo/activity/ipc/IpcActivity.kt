@@ -23,7 +23,7 @@ class IpcActivity : CommonBaseActivity<DemoActivityIpcBinding, IpcVM>() {
 
     override fun DemoActivityIpcBinding.initListener() {
         send.onClick {
-            RemoteServiceCall.sayHello("你好", 123, object :CallBlock<String>(){
+            RemoteServiceCall.sayHello(this@IpcActivity,"你好", 123, object :CallBlock<String>(){
                 override fun success(data: String?) {
                     ToastUtils.showShort(data?:"")
                 }
