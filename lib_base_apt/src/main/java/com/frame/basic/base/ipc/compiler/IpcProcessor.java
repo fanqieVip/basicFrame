@@ -1,5 +1,10 @@
 package com.frame.basic.base.ipc.compiler;
 
+import com.frame.basic.base.ipc.CallBlock;
+import com.frame.basic.base.ipc.MethodInfo;
+import com.frame.basic.base.ipc.annotations.IpcApi;
+import com.frame.basic.base.ipc.annotations.IpcServer;
+import com.frame.basic.base.ipc.annotations.IpcTarget;
 import com.google.auto.service.AutoService;
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
@@ -9,11 +14,6 @@ import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import com.frame.basic.base.ipc.CallBlock;
-import com.frame.basic.base.ipc.MethodInfo;
-import com.frame.basic.base.ipc.annotations.IpcApi;
-import com.frame.basic.base.ipc.annotations.IpcServer;
-import com.frame.basic.base.ipc.annotations.IpcTarget;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -30,6 +32,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -96,11 +99,23 @@ public class IpcProcessor extends AbstractProcessor {
                     //方法参数
                     List<TypeMirror> paramTypes = new ArrayList<>();
                     List<String> paramTags = new ArrayList<>();
+                    List<List<String>> annotationTypes = new ArrayList<>();
                     for (VariableElement param : realElement.getParameters()) {
                         TypeMirror typeName = param.asType();
                         String typeTag = param.toString();
                         paramTypes.add(typeName);
                         paramTags.add(typeTag);
+                        List<String> annotationTypeList = new ArrayList<>();
+                        List<? extends AnnotationMirror> annotationMirrors = param.getAnnotationMirrors();
+                        if (annotationMirrors != null && !annotationMirrors.isEmpty()){
+                            annotationMirrors.forEach(new Consumer<AnnotationMirror>() {
+                                @Override
+                                public void accept(AnnotationMirror annotationMirror) {
+                                    annotationTypeList.add(annotationMirror.getAnnotationType().toString());
+                                }
+                            });
+                        }
+                        annotationTypes.add(annotationTypeList);
                     }
                     //返回类型
                     TypeMirror returnType = realElement.getReturnType();
@@ -109,6 +124,7 @@ public class IpcProcessor extends AbstractProcessor {
                     methodInfo.setName(name);
                     methodInfo.setParamsTags(paramTags);
                     methodInfo.setParamsTypes(paramTypes);
+                    methodInfo.setAnnotationTypes(annotationTypes);
                     methodInfo.setReturnType(returnType);
                     methodInfos.add(methodInfo);
                 }
@@ -145,7 +161,21 @@ public class IpcProcessor extends AbstractProcessor {
                 for (int i = 0; i < methodInfo.getParamsTypes().size(); i++) {
                     TypeMirror paramType = methodInfo.getParamsTypes().get(i);
                     String paramTag = methodInfo.getParamsTags().get(i);
-                    ParameterSpec parameterSpec = ParameterSpec.builder(ClassName.get(paramType), paramTag).build();
+                    List<String> annotationTypes = methodInfo.getAnnotationTypes().get(i);
+                    ParameterSpec.Builder parameterSpecBuilder = ParameterSpec.builder(ClassName.get(paramType), paramTag);
+                    if (!annotationTypes.isEmpty()){
+                        annotationTypes.forEach(new Consumer<String>() {
+                            @Override
+                            public void accept(String annotationType) {
+                                try {
+                                    parameterSpecBuilder.addAnnotation(Class.forName(annotationType));
+                                } catch (ClassNotFoundException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                    ParameterSpec parameterSpec = parameterSpecBuilder.build();
                     methodBuilder.addParameter(parameterSpec);
                 }
                 //追加回调的参数
@@ -153,7 +183,9 @@ public class IpcProcessor extends AbstractProcessor {
                         ClassName.get(CallBlock.class),
                         ParameterizedTypeName.get(methodInfo.getReturnType()).box()
                 );
-                ParameterSpec callBlockParameter = ParameterSpec.builder(returnParams, "callBlock").build();
+                ParameterSpec callBlockParameter = ParameterSpec.builder(returnParams, "callBlock")
+                        .addAnnotation(Nullable.class)
+                        .build();
                 methodBuilder.addParameter(callBlockParameter);
                 //返回值
                 methodBuilder.returns(TypeName.VOID);
