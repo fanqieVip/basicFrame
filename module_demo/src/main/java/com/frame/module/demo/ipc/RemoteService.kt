@@ -11,7 +11,7 @@ import com.frame.basic.base.ipc.annotations.IpcServer
  * @Version:
  */
 @IpcServer
-class RemoteService : IpcService() {
+class RemoteService : IpcService(){
 
     @IpcApi
     fun sayHello(say: String, number: Int): String {
@@ -27,6 +27,9 @@ class RemoteService : IpcService() {
     fun register2(data: MutableList<String>): ArrayList<Boolean>? {
         return null
     }
-
+    @IpcApi
+    fun sayHello3(say: String, number: Int): String {
+        return say + number
+    }
 }
 
