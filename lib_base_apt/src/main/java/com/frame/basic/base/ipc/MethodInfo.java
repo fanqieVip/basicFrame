@@ -14,7 +14,16 @@ public class MethodInfo {
     private String name;
     private List<TypeMirror> paramsTypes;
     private List<String> paramsTags;
+    private List<List<String>> annotationTypes;
     private TypeMirror returnType;
+
+    public List<List<String>> getAnnotationTypes() {
+        return annotationTypes;
+    }
+
+    public void setAnnotationTypes(List<List<String>> annotationTypes) {
+        this.annotationTypes = annotationTypes;
+    }
 
     public List<String> getParamsTags() {
         return paramsTags;
