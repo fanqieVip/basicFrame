@@ -157,6 +157,10 @@ public class IpcProcessor extends AbstractProcessor {
             for (MethodInfo methodInfo : methodInfos) {
                 //方法名
                 MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder(methodInfo.getName()).addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+                //方法参数（LifecycleOwner绑定生命周期）
+                ParameterSpec.Builder ownerParameterSpecBuilder = ParameterSpec.builder(ClassName.get(Class.forName("androidx.lifecycle.LifecycleOwner")), "owner");
+                ownerParameterSpecBuilder.addAnnotation(Nullable.class);
+                methodBuilder.addParameter(ownerParameterSpecBuilder.build());
                 //方法参数（原方法自带的）
                 for (int i = 0; i < methodInfo.getParamsTypes().size(); i++) {
                     TypeMirror paramType = methodInfo.getParamsTypes().get(i);
@@ -190,19 +194,19 @@ public class IpcProcessor extends AbstractProcessor {
                 //返回值
                 methodBuilder.returns(TypeName.VOID);
                 //方法体
-                methodBuilder.addStatement("android.os.Bundle bundle = new android.os.Bundle();");
-                methodBuilder.addStatement("com.frame.basic.base.ipc.MethodDesc methodDesc = new com.frame.basic.base.ipc.MethodDesc();");
-                methodBuilder.addStatement("methodDesc.setName($L);", "\""+methodInfo.getName()+"\"");
-                methodBuilder.addStatement("java.util.List<com.frame.basic.base.ipc.ParamsDesc> paramsDescs = new java.util.ArrayList<>();");
+                methodBuilder.addStatement("android.os.Bundle bundle = new android.os.Bundle()");
+                methodBuilder.addStatement("com.frame.basic.base.ipc.MethodDesc methodDesc = new com.frame.basic.base.ipc.MethodDesc()");
+                methodBuilder.addStatement("methodDesc.setName($L)", "\""+methodInfo.getName()+"\"");
+                methodBuilder.addStatement("java.util.List<com.frame.basic.base.ipc.ParamsDesc> paramsDescs = new java.util.ArrayList<>()");
                 for (int i = 0; i < methodInfo.getParamsTypes().size(); i++) {
                     TypeMirror paramType = methodInfo.getParamsTypes().get(i);
                     String paramTag = methodInfo.getParamsTags().get(i);
-                    methodBuilder.addStatement("paramsDescs.add(new com.frame.basic.base.ipc.ParamsDesc($L, $L));", deleteGeneric(paramType.toString())+".class", paramTag);
+                    methodBuilder.addStatement("paramsDescs.add(new com.frame.basic.base.ipc.ParamsDesc($L, $L))", deleteGeneric(paramType.toString())+".class", paramTag);
                 }
-                methodBuilder.addStatement("methodDesc.setParams(paramsDescs);");
-                methodBuilder.addStatement("methodDesc.setResult($L);", deleteGeneric(methodInfo.getReturnType().toString())+".class");
-                methodBuilder.addStatement("bundle.putSerializable(\"method\", methodDesc);");
-                methodBuilder.addStatement("com.frame.basic.base.ipc.IpcHelper.sendMsg($L, bundle, callBlock);", name+".class");
+                methodBuilder.addStatement("methodDesc.setParams(paramsDescs)");
+                methodBuilder.addStatement("methodDesc.setResult($L)", deleteGeneric(methodInfo.getReturnType().toString())+".class");
+                methodBuilder.addStatement("bundle.putSerializable(\"method\", methodDesc)");
+                methodBuilder.addStatement("com.frame.basic.base.ipc.IpcHelper.sendMsg($L, $L, bundle, callBlock)", name+".class", "owner");
                 //添加方法到类上
                 typeSpecBuilder.addMethod(methodBuilder.build());
             }
