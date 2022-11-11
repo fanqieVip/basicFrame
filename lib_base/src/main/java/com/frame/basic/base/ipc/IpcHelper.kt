@@ -34,7 +34,7 @@ object IpcHelper {
     fun <T> sendMsg(
         remote: Class<out IpcService>,
         bundle: Bundle,
-        callBlock: CallBlock<T>
+        callBlock: CallBlock<T>?
     ) {
         connections[remote]?.binder?.let { binder ->
             val messenger = Messenger(binder)
@@ -43,7 +43,7 @@ object IpcHelper {
                 replyTo = Messenger(object : Handler(Looper.getMainLooper()) {
                     override fun handleMessage(msg: Message) {
                         if (msg.what == MSG_FROM_SERVER) {
-                            callBlock.success(msg.data.getSerializable("result") as? T)
+                            callBlock?.success(msg.data.getSerializable("result") as? T)
                         }
                     }
                 })
@@ -52,7 +52,7 @@ object IpcHelper {
                 messenger.send(message)
             } catch (e: RemoteException) {
                 e.printStackTrace()
-                callBlock.error(e.localizedMessage)
+                callBlock?.error(e.localizedMessage)
             }
 
         }
