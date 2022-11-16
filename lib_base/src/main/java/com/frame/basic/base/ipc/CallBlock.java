@@ -1,5 +1,7 @@
 package com.frame.basic.base.ipc;
 
+import androidx.annotation.Nullable;
+
 /**
  * @Description:
  * @Author: fanj
@@ -7,6 +9,8 @@ package com.frame.basic.base.ipc;
  * @Version:
  */
 public abstract class CallBlock<T> {
-    public abstract void success(T data);
-    public void error(String error){}
+    public abstract void success(@Nullable T data);
+
+    public void error(@Nullable String error) {
+    }
 }
