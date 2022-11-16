@@ -1,8 +1,6 @@
 package com.frame.basic.base.ktx
 
-import android.app.Activity
 import androidx.annotation.NonNull
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
 
 /**
@@ -15,7 +13,7 @@ fun <T> LiveData<T>.observeForever(
     observeForever(observer)
     owner.lifecycle.addObserver(object : LifecycleEventObserver {
         override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
-            if (event == Lifecycle.Event.ON_DESTROY || (event == Lifecycle.Event.ON_PAUSE  && ((source is Activity && source.isFinishing) || (source is Fragment && source.activity != null && source.requireActivity().isFinishing)))) {
+            if (event == Lifecycle.Event.ON_DESTROY) {
                 removeObserver(observer)
             }
         }
