@@ -52,7 +52,7 @@ object DependencyConfig {
         const val RecyclerViewAdapter = "3.0.4"             // RecyclerViewAdapter
         const val StatusBar = "1.5.1"                       // 状态栏
         const val XXPermission = "13.5"                     // 权限申请
-        const val LeakCanary = "2.7"                        // 检测内存泄漏
+        const val LeakCanary = "2.9.1"                        // 检测内存泄漏
         const val AutoService = "1.0"                       // 自动生成SPI暴露服务文件
         const val BlankJ = "1.29.0"                         // BlankJ工具包
         const val SmartRefreshLayoutKernel = "2.0.3"        // SmartRefreshLayout核心
