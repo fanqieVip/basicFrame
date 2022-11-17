@@ -89,7 +89,13 @@ abstract class BaseVM(private val handle: SavedStateHandle) : CoreVM(), VMContro
     protected fun <T : Any> savedStateLiveData(
         key: String,
         initializer: T? = null
-    ): Lazy<MutableLiveData<T>> = SavedStateHandleMutableLiveDataLazy(key, handle, initializer)
+    ): Lazy<MutableLiveData<T>> = SavedStateHandleMutableLiveDataLazy(key, handle, initializer).also {
+        //如果是通过putExtra(owner, key, initializer)传过来的值，则默认初始化一次，初始化时会清空全局变量中存放的callback，以避免未进行初始化调用时内存泄漏的问题
+        val functionExtraKey = handle.get<Any>(key)
+        if (functionExtraKey != null && functionExtraKey is String && functionExtraKey.startsWith(functionExtraTag)) {
+            it.value
+        }
+    }
 }
 
 internal class SavedStateHandleMutableLiveDataLazy<T : Any>(
