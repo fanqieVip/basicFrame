@@ -125,18 +125,9 @@ abstract class BaseActivity<VB : ViewBinding, VM : BaseVM> : AppCompatActivity()
         )
         refreshLayout!!.setOnRefreshListener {
             mBindingVM.refreshLayoutState.value = RefreshLayoutStatus.REFRESH
-            mBindingVM.onRefresh(this)
         }
         refreshLayout!!.setOnLoadMoreListener {
             mBindingVM.refreshLayoutState.value = RefreshLayoutStatus.LOAD_MORE
-            if (mBindingVM is PagingControl) {
-                (mBindingVM as PagingControl).apply {
-                    if (mBindingVM.currentPageNo.value == null) {
-                        mBindingVM.currentPageNo.value = getFirstPageNo()
-                    }
-                    onLoadMore(this@BaseActivity, mBindingVM.currentPageNo.value!! + 1)
-                }
-            }
         }
         return refreshLayout!!
     }
@@ -249,6 +240,22 @@ abstract class BaseActivity<VB : ViewBinding, VM : BaseVM> : AppCompatActivity()
                 }
                 RefreshLayoutStatus.NO_MORE -> {
                     refreshLayout?.finishLoadMoreWithNoMoreData()
+                }
+                RefreshLayoutStatus.REFRESH -> {
+                    if (refreshLayout?.isRefreshing != true){
+                        refreshLayout?.resetNoMoreData()
+                    }
+                    mBindingVM.onRefresh(this@BaseActivity)
+                }
+                RefreshLayoutStatus.LOAD_MORE -> {
+                    if (mBindingVM is PagingControl) {
+                        (mBindingVM as PagingControl).apply {
+                            if (mBindingVM.currentPageNo.value == null) {
+                                mBindingVM.currentPageNo.value = getFirstPageNo()
+                            }
+                            onLoadMore(this@BaseActivity, mBindingVM.currentPageNo.value!! + 1)
+                        }
+                    }
                 }
             }
         }
