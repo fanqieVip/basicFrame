@@ -109,18 +109,9 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
         )
         refreshLayout!!.setOnRefreshListener {
             mBindingVM.refreshLayoutState.value = RefreshLayoutStatus.REFRESH
-            mBindingVM.onRefresh(viewLifecycleOwner)
         }
         refreshLayout!!.setOnLoadMoreListener {
             mBindingVM.refreshLayoutState.value = RefreshLayoutStatus.LOAD_MORE
-            if (mBindingVM is PagingControl) {
-                (mBindingVM as PagingControl).apply {
-                    if (mBindingVM.currentPageNo.value == null) {
-                        mBindingVM.currentPageNo.value = getFirstPageNo()
-                    }
-                    onLoadMore(viewLifecycleOwner, mBindingVM.currentPageNo.value!! + 1)
-                }
-            }
         }
         return refreshLayout!!
     }
@@ -415,6 +406,22 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
                 }
                 RefreshLayoutStatus.NO_MORE -> {
                     refreshLayout?.finishLoadMoreWithNoMoreData()
+                }
+                RefreshLayoutStatus.REFRESH -> {
+                    if (refreshLayout?.isRefreshing != true){
+                        refreshLayout?.resetNoMoreData()
+                    }
+                    mBindingVM.onRefresh(viewLifecycleOwner)
+                }
+                RefreshLayoutStatus.LOAD_MORE -> {
+                    if (mBindingVM is PagingControl) {
+                        (mBindingVM as PagingControl).apply {
+                            if (mBindingVM.currentPageNo.value == null) {
+                                mBindingVM.currentPageNo.value = getFirstPageNo()
+                            }
+                            onLoadMore(viewLifecycleOwner, mBindingVM.currentPageNo.value!! + 1)
+                        }
+                    }
                 }
             }
         }
