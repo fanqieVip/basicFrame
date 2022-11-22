@@ -12,15 +12,18 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.viewbinding.ViewBinding
 import com.blankj.utilcode.util.ScreenUtils
-import com.google.common.collect.HashBiMap
-import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import com.frame.basic.base.R
 import com.frame.basic.base.ktx.bindCheck
 import com.frame.basic.base.ktx.onChecked
 import com.frame.basic.base.mvvm.c.*
 import com.frame.basic.base.mvvm.v.base.ContainerStyle
 import com.frame.basic.base.mvvm.vm.BaseVM
-import com.frame.basic.base.utils.*
+import com.frame.basic.base.utils.BindingReflex
+import com.frame.basic.base.utils.FragmentTabControl
+import com.frame.basic.base.utils.UIBarUtils
+import com.frame.basic.base.utils.ViewRecreateHelper
+import com.google.common.collect.HashBiMap
+import com.scwang.smart.refresh.layout.SmartRefreshLayout
 
 /**
  * @Description:
@@ -119,18 +122,9 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
         )
         refreshLayout!!.setOnRefreshListener {
             mBindingVM.refreshLayoutState.value = RefreshLayoutStatus.REFRESH
-            mBindingVM.onRefresh(viewLifecycleOwner)
         }
         refreshLayout!!.setOnLoadMoreListener {
             mBindingVM.refreshLayoutState.value = RefreshLayoutStatus.LOAD_MORE
-            if (mBindingVM is PagingControl) {
-                (mBindingVM as PagingControl).apply {
-                    if (mBindingVM.currentPageNo.value == null) {
-                        mBindingVM.currentPageNo.value = getFirstPageNo()
-                    }
-                    onLoadMore(viewLifecycleOwner, mBindingVM.currentPageNo.value!! + 1)
-                }
-            }
         }
         return refreshLayout!!
     }
@@ -269,6 +263,22 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
                 }
                 RefreshLayoutStatus.NO_MORE -> {
                     refreshLayout?.finishLoadMoreWithNoMoreData()
+                }
+                RefreshLayoutStatus.REFRESH -> {
+                    if (refreshLayout?.isRefreshing != true){
+                        refreshLayout?.resetNoMoreData()
+                    }
+                    mBindingVM.onRefresh(viewLifecycleOwner)
+                }
+                RefreshLayoutStatus.LOAD_MORE -> {
+                    if (mBindingVM is PagingControl) {
+                        (mBindingVM as PagingControl).apply {
+                            if (mBindingVM.currentPageNo.value == null) {
+                                mBindingVM.currentPageNo.value = getFirstPageNo()
+                            }
+                            onLoadMore(viewLifecycleOwner, mBindingVM.currentPageNo.value!! + 1)
+                        }
+                    }
                 }
             }
         }
