@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelLazy
 import androidx.viewbinding.ViewBinding
 import com.frame.basic.base.ktx.functionExtras
 import com.frame.basic.base.ktx.getFunctionExtraKey
+import com.frame.basic.base.mvvm.vm.BaseVM
 import com.frame.basic.base.mvvm.vm.CoreVM
 import java.io.Serializable
 
@@ -189,6 +190,19 @@ interface PagingControl {
      *  @param pageNo 用于请求的页码
      */
     fun onLoadMore(owner: LifecycleOwner, pageNo: Int)
+
+    /**
+     * 手动刷新列表
+     * @param showLoading 是否需要全屏loading
+     */
+    fun refreshData(showLoading: Boolean = true) {
+        if (this is BaseVM) {
+            if (showLoading){
+                this.loading()
+            }
+            this.refreshLayoutState.postValue(RefreshLayoutStatus.REFRESH)
+        }
+    }
 }
 
 /**
