@@ -42,7 +42,7 @@ object CrashHelper {
                         return@post
                     } else if (exceptionInfo.contains("DeadSystemException") || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && e is DeadSystemException)) {
                         return@post
-                    } else if (e is IllegalArgumentException && exceptionInfo.contains("reportSizeConfigurations")) {
+                    } else if (e is IllegalArgumentException && (exceptionInfo.contains("reportSizeConfigurations") || exceptionInfo.contains("not attached to a context") || exceptionInfo.contains("Cannot add the same observer with different lifecycles"))) {
                         return@post
                     } else if (e is ErrnoException) {
                         return@post
