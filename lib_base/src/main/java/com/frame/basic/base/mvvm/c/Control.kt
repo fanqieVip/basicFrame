@@ -36,9 +36,16 @@ class UIStatusInfo(val uiStatus: UIStatus, val error: Int = 0, val msg: String? 
  * 界面显示状态
  */
 enum class DisplayStatus {
+    //onResume
+    RESUME,
+    //onStop
+    STOP,
+    //onPause
     PAUSING,
+    //界面可见 比RESUME后执行
     SHOWING,
-    HIDDEN
+    //见面不可见 比STOP后执行
+    HIDDEN,
 }
 
 /**
