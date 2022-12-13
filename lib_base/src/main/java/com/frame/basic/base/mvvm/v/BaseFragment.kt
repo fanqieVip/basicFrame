@@ -219,6 +219,7 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
 
     override fun onStop() {
         super.onStop()
+        mBindingVM.displayStatus.value = DisplayStatus.STOP
         if (!isHidden && !isAttachToViewPager() && !hiddening) {
             onStopInvisible()
         }
@@ -229,6 +230,7 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
 
     override fun onResume() {
         super.onResume()
+        mBindingVM.displayStatus.value = DisplayStatus.RESUME
         recreateding = false
         if (isAttachToViewPager()) {
             if (isUIVisible && callIsMenuVisible() && isViewCreated && hasLazyLoad) {
