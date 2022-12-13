@@ -291,6 +291,7 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
     }
     override fun onStop() {
         super.onStop()
+        mBindingVM.displayStatus.value = DisplayStatus.STOP
         mBindingVM.displayStatus.value = DisplayStatus.HIDDEN
     }
 
@@ -300,6 +301,7 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
     }
     override fun onResume() {
         super.onResume()
+        mBindingVM.displayStatus.value = DisplayStatus.RESUME
         mBindingVM.displayStatus.value = DisplayStatus.SHOWING
         recreateding = false
         //todo Dialog设置StatusBar, NavigationBar亮色模式无效，等待解决
