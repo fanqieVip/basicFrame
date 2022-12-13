@@ -304,11 +304,13 @@ abstract class BaseActivity<VB : ViewBinding, VM : BaseVM> : AppCompatActivity()
 
     override fun onStop() {
         super.onStop()
+        mBindingVM.displayStatus.value = DisplayStatus.STOP
         mBindingVM.displayStatus.value = DisplayStatus.HIDDEN
     }
 
     override fun onResume() {
         super.onResume()
+        mBindingVM.displayStatus.value = DisplayStatus.RESUME
         mBindingVM.displayStatus.value = DisplayStatus.SHOWING
         recreateding = false
         UIBarUtils.initStatusAndNavigationBar(this, this)
