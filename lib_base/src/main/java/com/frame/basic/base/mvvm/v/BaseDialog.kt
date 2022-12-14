@@ -42,6 +42,7 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
     }
     protected abstract val mBindingVM: VM
     private lateinit var rootView: ViewGroup
+    private lateinit var contentViewGroup: ViewGroup
     private var isRecreate = false
     private var recreateding = false
 
@@ -63,7 +64,8 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
         isRecreate = ViewRecreateHelper.getRecreateStatus(this, savedInstanceState)
         initWindowStyleBefore()
         initWindowStyle()
-        rootView = customRootView(ContainerStyle.packageContainers(this))
+        contentViewGroup = ContainerStyle.packageContainers(this)
+        rootView = customRootView(contentViewGroup)
         return rootView
     }
 
@@ -232,11 +234,11 @@ abstract class BaseDialog<VB : ViewBinding, VM : BaseVM> : DialogFragment(), UIC
     private fun initVMControlObserve() {
         mBindingVM.uiStatus.observe(viewLifecycleOwner) {
             when (it.uiStatus) {
-                UIStatus.LOADING -> ContainerStyle.replaceToLoadingView(rootView, this)
-                UIStatus.SUCCESS -> ContainerStyle.replaceToContentView(rootView, this)
-                UIStatus.EMPTY -> ContainerStyle.replaceToEmptyView(rootView, this)
+                UIStatus.LOADING -> ContainerStyle.replaceToLoadingView(contentViewGroup, this)
+                UIStatus.SUCCESS -> ContainerStyle.replaceToContentView(contentViewGroup, this)
+                UIStatus.EMPTY -> ContainerStyle.replaceToEmptyView(contentViewGroup, this)
                 UIStatus.ERROR -> ContainerStyle.replaceToErrorView(
-                    rootView,
+                    contentViewGroup,
                     this,
                     it.error,
                     it.msg
