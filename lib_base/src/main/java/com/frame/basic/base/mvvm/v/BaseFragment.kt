@@ -45,6 +45,7 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
     private var isLoad = false
     private var recreateding = false
     private lateinit var rootView: ViewGroup
+    private lateinit var contentViewGroup: ViewGroup
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,7 +56,8 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
         //获取重建状态
         isRecreate = ViewRecreateHelper.getRecreateStatus(this, savedInstanceState)
         isLoad = ViewRecreateHelper.getLoadStatus(this, savedInstanceState)
-        rootView = customRootView(ContainerStyle.packageContainers(this))
+        contentViewGroup = ContainerStyle.packageContainers(this)
+        rootView = customRootView(contentViewGroup)
         return rootView
     }
 
@@ -377,11 +379,11 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
     private fun initVMControlObserve() {
         mBindingVM.uiStatus.observe(viewLifecycleOwner) {
             when (it.uiStatus) {
-                UIStatus.LOADING -> ContainerStyle.replaceToLoadingView(rootView, this)
-                UIStatus.SUCCESS -> ContainerStyle.replaceToContentView(rootView, this)
-                UIStatus.EMPTY -> ContainerStyle.replaceToEmptyView(rootView, this)
+                UIStatus.LOADING -> ContainerStyle.replaceToLoadingView(contentViewGroup, this)
+                UIStatus.SUCCESS -> ContainerStyle.replaceToContentView(contentViewGroup, this)
+                UIStatus.EMPTY -> ContainerStyle.replaceToEmptyView(contentViewGroup, this)
                 UIStatus.ERROR -> ContainerStyle.replaceToErrorView(
-                    rootView,
+                    contentViewGroup,
                     this,
                     it.error,
                     it.msg
