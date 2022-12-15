@@ -36,7 +36,9 @@ abstract class BaseVM(private val handle: SavedStateHandle) : CoreVM(), VMContro
     val uiStatusMode = MutableLiveData<UIStatus>()
     final override fun loadSuccess(empty: Boolean) {
         if (!empty) {
-            uiStatus.postValue(UIStatusInfo(UIStatus.SUCCESS))
+            if (uiStatus.value?.uiStatus != UIStatus.SUCCESS){
+                uiStatus.postValue(UIStatusInfo(UIStatus.SUCCESS))
+            }
             if (this is PagingControl) {
                 when (refreshLayoutState.value) {
                     RefreshLayoutStatus.LOAD_MORE -> {
@@ -69,7 +71,9 @@ abstract class BaseVM(private val handle: SavedStateHandle) : CoreVM(), VMContro
     }
 
     final override fun loading() {
-        uiStatus.postValue(UIStatusInfo(UIStatus.LOADING))
+        if (uiStatus.value?.uiStatus != UIStatus.LOADING){
+            uiStatus.postValue(UIStatusInfo(UIStatus.LOADING))
+        }
     }
 
     final override fun showPopLoading(text: String) {
