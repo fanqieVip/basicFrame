@@ -9,6 +9,7 @@ import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.viewbinding.ViewBinding
+import com.bumptech.glide.Glide
 import com.google.common.collect.HashBiMap
 import com.scwang.smart.refresh.layout.SmartRefreshLayout
 import com.frame.basic.base.ktx.bindCheck
@@ -237,10 +238,14 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
         if (isAttachToViewPager()) {
             if (isUIVisible && callIsMenuVisible() && isViewCreated && hasLazyLoad) {
                 onResumeVisible()
+            } else {
+                pauseGlideRequests(true)
             }
         } else {
             if (!isHidden && !hiddening) {
                 onResumeVisible()
+            } else {
+                pauseGlideRequests(true)
             }
         }
     }
@@ -261,11 +266,36 @@ abstract class BaseFragment<VB : ViewBinding, VM : BaseVM> : Fragment(), UIContr
         activity?.let {
             UIBarUtils.initStatusAndNavigationBar(it, this)
         }
+        pauseGlideRequests(false)
         mBindingVM.displayStatus.value = DisplayStatus.SHOWING
     }
 
     open fun onStopInvisible() {
+        pauseGlideRequests(true)
         mBindingVM.displayStatus.value = DisplayStatus.HIDDEN
+    }
+
+    /**
+     * 暂停与恢复网络图片加载
+     * @param pause true：暂停  false: 恢复
+     */
+    private fun pauseGlideRequests(pause: Boolean){
+        if (activity == null || activity?.isFinishing == true || activity?.isDestroyed == true){
+            return
+        }
+        try {
+            Glide.with(this).apply {
+                if (pause){
+                    if (!isPaused) {
+                        pauseRequests()
+                    }
+                }else{
+                    if (isPaused) {
+                        resumeRequests()
+                    }
+                }
+            }
+        }catch (e: Exception){}
     }
 
     override fun onDestroyView() {
