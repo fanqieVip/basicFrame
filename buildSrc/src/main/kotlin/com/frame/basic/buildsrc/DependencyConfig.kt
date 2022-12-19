@@ -68,6 +68,7 @@ object DependencyConfig {
         const val GlideIntegration = "4.11.0"               // GlideIntegration
         const val GlideGifDecoder = "4.1.0"                 // Glide加载Gif
         const val Lottie = "3.7.2"                          // Lottie动画框架
+        const val UnPeekLiveData = "7.2.0-beta1"            // UnPeekLiveData粘性LiveData解决方案 https://toscode.gitee.com/superbro/UnPeek-LiveData
     }
 
     /**
@@ -176,6 +177,7 @@ object DependencyConfig {
         const val GlideIntegration = "com.github.bumptech.glide:okhttp3-integration:${Version.GlideIntegration}"
         const val GlideGifDecoder = "jp.wasabeef:glide-transformations:${Version.GlideGifDecoder}"
         const val Lottie = "com.airbnb.android:lottie:${Version.Lottie}"
+        const val UnPeekLiveData = "com.kunminx.arch:unpeek-livedata:${Version.UnPeekLiveData}"
     }
 
     /**
