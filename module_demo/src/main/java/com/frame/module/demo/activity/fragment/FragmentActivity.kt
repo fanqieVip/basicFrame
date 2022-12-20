@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import com.frame.basic.base.mvvm.c.IndicatorPlugin
 import com.frame.basic.base.mvvm.c.vms
+import com.frame.basic.base.mvvm.v.BaseFragment
 import com.frame.basic.base.mvvm.vm.BaseVM
 import com.frame.basic.common.demo.ui.CommonBaseActivity
 import com.frame.module.demo.databinding.DemoActivityFragmentBinding
@@ -80,22 +81,25 @@ class FragmentActivity : CommonBaseActivity<DemoActivityFragmentBinding, Fragmen
     override fun getMagicIndicator() = mBinding.tabLayout
     override fun getViewPager() = mBinding.viewPager
     override fun getIndicatorFragments(): ArrayList<Fragment> {
-        return ArrayList<Fragment>().apply {
-            supportFragmentManager.fragments.let { history ->
-                add(history.find { it is InnerFragment } ?: InnerFragment())
-                add(history.find { it is MainLayoutFragment } ?: MainLayoutFragment())
-                add(history.find { it is MainInteractionFragment } ?: MainInteractionFragment())
-                add(history.find { it is RefreshLayoutFragment } ?: RefreshLayoutFragment())
-                add(history.find { it is SingleTypeRecyclerViewFragment }
-                    ?: SingleTypeRecyclerViewFragment())
-                add(history.find { it is MultiTypeRecyclerViewFragment }
-                    ?: MultiTypeRecyclerViewFragment())
-                add(history.find { it is CoordinatorFragment } ?: CoordinatorFragment())
-                add(history.find { it is PageFragment } ?: PageFragment())
-                add(history.find { it is ShareViewModelsFragment } ?: ShareViewModelsFragment())
-                add(history.find { it is CallParamsFragment } ?: CallParamsFragment().putExtra("params", "我是传输的参数，看到我了吗"))
-                add(history.find { it is TabFragment } ?: TabFragment())
+        val exitFragments = supportFragmentManager.fragments.filterIsInstance<BaseFragment<*,*>>()
+        supportFragmentManager.beginTransaction()?.let { transaction ->
+            exitFragments.forEach { f ->
+                transaction.remove(f)
             }
+            transaction.commit()
+        }
+        return ArrayList<Fragment>().apply {
+                add(InnerFragment())
+                add(MainLayoutFragment())
+                add(MainInteractionFragment())
+                add(RefreshLayoutFragment())
+                add(SingleTypeRecyclerViewFragment())
+                add(MultiTypeRecyclerViewFragment())
+                add(CoordinatorFragment())
+                add(PageFragment())
+                add(ShareViewModelsFragment())
+                add(CallParamsFragment().putExtra("params", "我是传输的参数，看到我了吗"))
+                add(TabFragment())
         }
     }
 
