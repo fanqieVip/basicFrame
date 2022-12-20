@@ -7,11 +7,11 @@ package com.frame.basic.buildsrc
  * @since 4/24/21 5:56 PM
  */
 object ProjectBuildConfig {
-    const val compileSdkVersion = 30
-    const val buildToolsVersion = "30.0.2"
+    const val compileSdkVersion = 33
+    const val buildToolsVersion = "33.0.1"
     const val applicationId = "com.frame.basic"
     const val minSdkVersion = 21
-    const val targetSdkVersion = 30
+    const val targetSdkVersion = 33
     const val versionCode = 1
     const val versionName = "1.0"
 
