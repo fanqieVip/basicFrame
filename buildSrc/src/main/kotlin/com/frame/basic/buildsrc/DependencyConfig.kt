@@ -17,13 +17,13 @@ object DependencyConfig {
     object Version {
 
         // AndroidX--------------------------------------------------------------
-        const val AppCompat = "1.2.0"
-        const val CoreKtx = "1.3.1"
-        const val ConstraintLayout = "2.0.1"                // 约束布局
+        const val AppCompat = "1.3.1"
+        const val CoreKtx = "1.7.0"
+        const val ConstraintLayout = "2.1.3"                // 约束布局
         const val TestExtJunit = "1.1.2"
         const val TestEspresso = "3.3.0"
-        const val ActivityKtx = "1.1.0"
-        const val FragmentKtx = "1.2.5"
+        const val ActivityKtx = "1.5.1"
+        const val FragmentKtx = "1.5.2"
         const val MultiDex = "2.0.1"
 
         // Android---------------------------------------------------------------
@@ -31,13 +31,13 @@ object DependencyConfig {
         const val Material = "1.2.0"                        // 材料设计UI套件
 
         // Kotlin----------------------------------------------------------------
-        const val Kotlin = "1.5.10"
-        const val Coroutines = "1.5.0"                      // 协程
+        const val Kotlin = "1.7.0"
+        const val Coroutines = "1.6.1"                      // 协程
 
         // JetPack---------------------------------------------------------------
-        const val Lifecycle = "2.3.1"                       // Lifecycle相关（ViewModel & LiveData & Lifecycle）
+        const val Lifecycle = "2.5.0"                       // Lifecycle相关（ViewModel & LiveData & Lifecycle）
         const val Room = "2.2.5"                            // Room 数据库
-        const val Hilt = "2.35.1"                           // DI框架-Hilt
+        const val Hilt = "2.43.2"                           // DI框架-Hilt
         const val HiltAndroidx = "1.0.0"
         const val DataBinding = "4.2.1"                     //databind相关
 
@@ -51,7 +51,7 @@ object DependencyConfig {
         const val AutoSize = "1.2.1"                        // 屏幕适配
         const val RecyclerViewAdapter = "3.0.4"             // RecyclerViewAdapter
         const val StatusBar = "1.5.1"                       // 状态栏
-        const val XXPermission = "13.5"                     // 权限申请
+        const val XXPermission = "16.5"                     // 权限申请
         const val LeakCanary = "2.9.1"                        // 检测内存泄漏
         const val AutoService = "1.0"                       // 自动生成SPI暴露服务文件
         const val BlankJ = "1.29.0"                         // BlankJ工具包
@@ -68,7 +68,7 @@ object DependencyConfig {
         const val GlideIntegration = "4.11.0"               // GlideIntegration
         const val GlideGifDecoder = "4.1.0"                 // Glide加载Gif
         const val Lottie = "3.7.2"                          // Lottie动画框架
-        const val UnPeekLiveData = "7.2.0-beta1"            // UnPeekLiveData粘性LiveData解决方案 https://toscode.gitee.com/superbro/UnPeek-LiveData
+        const val UnPeekLiveData = "7.8.0"                  // UnPeekLiveData粘性LiveData解决方案 https://github.com/KunMinX/UnPeek-LiveData
     }
 
     /**
