@@ -602,7 +602,6 @@ interface WebViewPlugin {
                 domStorageEnabled = true
                 allowFileAccess = true
                 databaseEnabled = true
-                setAppCacheEnabled(true)
                 blockNetworkImage = true
                 if (multipleWindow != null) {
                     setSupportMultipleWindows(true)
@@ -855,6 +854,7 @@ interface WebViewPlugin {
                         Lifecycle.Event.ON_DESTROY -> {
                             recycleWebView()
                         }
+                        else -> {}
                     }
                 }
             })
