@@ -69,6 +69,7 @@ class CommonBaseRefreshHeader: LinearLayout, RefreshHeader {
                 mHeaderText.text = "释放立即刷新"
                 mArrowView.animate().rotation(180f)
             }
+            else -> {}
         }
     }
 
@@ -161,6 +162,7 @@ class CommonBaseRefreshFooter: LinearLayout, RefreshFooter {
                     mFooterText.text = "释放立即加载"
                     mArrowView.animate().rotation(180f)
                 }
+                else -> {}
             }
         }else{
             mFooterText.text = "没有更多数据了"
