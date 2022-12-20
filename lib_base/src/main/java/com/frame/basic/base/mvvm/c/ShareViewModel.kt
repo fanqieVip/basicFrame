@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.annotation.MainThread
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
+import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.savedstate.SavedStateRegistryOwner
 import com.frame.basic.base.BaseApplication
 import com.frame.basic.base.mvvm.vm.CoreVM
@@ -29,12 +30,12 @@ import kotlin.reflect.KClass
 
 @MainThread
 inline fun <reified VM : CoreVM> ComponentActivity.vms(): Lazy<VM> {
-    return ShareViewModelLazy({ defaultViewModelProviderFactory }, VM::class, this)
+    return ShareViewModelLazy({ defaultViewModelProviderFactory }, {this.defaultViewModelCreationExtras}, VM::class, this)
 }
 
 @MainThread
 inline fun <reified VM : CoreVM> Fragment.vms(): Lazy<VM> {
-    return ShareViewModelLazy({ defaultViewModelProviderFactory }, VM::class, this)
+    return ShareViewModelLazy({ defaultViewModelProviderFactory }, {this.defaultViewModelCreationExtras}, VM::class, this)
 }
 
 /**
@@ -83,6 +84,7 @@ inline fun <reified VM : ViewModel> getViewModel(): VM? {
 
 class ShareViewModelLazy<VM : ViewModel>(
     private val factoryProducer: () -> ViewModelProvider.Factory,
+    private val defaultCreationExtras: () -> CreationExtras ,
     private val viewModelClass: KClass<VM>,
     private val lifecycleOwner: LifecycleOwner
 ) : Lazy<VM> {
@@ -93,13 +95,14 @@ class ShareViewModelLazy<VM : ViewModel>(
             return if (viewModel == null) {
                 val store = shareVmStore
                 store.bindHost(viewModelClass.java.name, lifecycleOwner)
-                ViewModelProvider(store, factoryProducer.invoke()).get(viewModelClass.java).also {
+                ViewModelProvider(store.viewModelStore, factoryProducer(), defaultCreationExtras())[viewModelClass.java].also {
                     cached = it
                 }
             } else {
                 viewModel
             }
         }
+
 
     override fun isInitialized(): Boolean = cached != null
 }
