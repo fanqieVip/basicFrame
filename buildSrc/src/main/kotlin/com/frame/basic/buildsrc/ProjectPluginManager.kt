@@ -7,7 +7,7 @@ package com.frame.basic.buildsrc
  * @since 4/24/21 5:56 PM
  */
 object ProjectPluginManager {
-    const val AndroidToolsPlugin = "com.android.tools.build:gradle:4.2.1"
-    const val KotlinPlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.10"
-    const val HiltPlugin = "com.google.dagger:hilt-android-gradle-plugin:2.35.1"
+    const val AndroidToolsPlugin = "com.android.tools.build:gradle:7.3.1"
+    const val KotlinPlugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0"
+    const val HiltPlugin = "com.google.dagger:hilt-android-gradle-plugin:2.43.2"
 }
