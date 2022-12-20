@@ -1,9 +1,6 @@
 import com.frame.basic.buildsrc.*
 
 buildscript {
-    ext {
-        kotlin_version = '1.5.10'
-    }
     repositories {
         google()
         jcenter()
