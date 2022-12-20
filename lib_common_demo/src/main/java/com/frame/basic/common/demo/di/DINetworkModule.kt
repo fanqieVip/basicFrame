@@ -1,11 +1,9 @@
 package com.frame.basic.common.demo.di
 
-import android.util.Log
-import com.readystatesoftware.chuck.ChuckInterceptor
+import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.frame.basic.base.BaseApplication
 import com.frame.basic.base.BuildConfig
 import com.frame.basic.base.constant.VersionStatus
-import com.frame.basic.base.ktx.DownloadProgress
 import com.frame.basic.base.ktx.ProgressInterceptor
 import com.frame.basic.common.demo.constant.NetBaseUrlConstant
 import com.frame.basic.common.demo.net.AuthInterceptor
@@ -19,7 +17,6 @@ import okhttp3.logging.HttpLoggingInterceptor.Level.HEADERS
 import okhttp3.logging.HttpLoggingInterceptor.Level.NONE
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -58,7 +55,7 @@ class DINetworkModule {
             .apply {
                 //非生产环境启用Chuck日志
                 if (BuildConfig.VERSION_TYPE != VersionStatus.RELEASE) {
-                    addInterceptor(ChuckInterceptor(BaseApplication.application))
+                    addInterceptor(ChuckerInterceptor.Builder(BaseApplication.application).build())
                 }
             }
             .retryOnConnectionFailure(true)
