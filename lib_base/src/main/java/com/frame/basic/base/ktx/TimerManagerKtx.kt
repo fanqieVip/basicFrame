@@ -1,5 +1,6 @@
 package com.frame.basic.base.ktx
 
+import android.annotation.SuppressLint
 import android.app.*
 import android.content.Context
 import android.content.Intent
@@ -205,6 +206,7 @@ class TimerManager(private val scope: CoroutineScope, keepWakeUp: Boolean) {
     /**
      * 锁定cpu电源
      */
+    @SuppressLint("NewApi")
     private fun lockCpuPowerManager() {
         if (!AppUtils.isServiceRunning(
                 BaseApplication.application,
@@ -212,10 +214,13 @@ class TimerManager(private val scope: CoroutineScope, keepWakeUp: Boolean) {
             )
         ) {
             val wakeUpCpuService = Intent(BaseApplication.application, WakeUpCpuService::class.java)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                BaseApplication.application.startForegroundService(wakeUpCpuService)
-            } else {
-                BaseApplication.application.startService(wakeUpCpuService)
+            when(Build.VERSION.SDK_INT){
+                in Build.VERSION_CODES.O until Build.VERSION_CODES.S -> {
+                    BaseApplication.application.startForegroundService(wakeUpCpuService)
+                }
+                in 0 until Build.VERSION_CODES.O -> {
+                    BaseApplication.application.startService(wakeUpCpuService)
+                }
             }
         }
         if (wakelock?.isHeld == true) {//如果已获得唤醒锁但尚未释放，则返回true。
