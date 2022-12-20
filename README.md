@@ -6,7 +6,7 @@
 ## 基础库
 
 1.本项目基于[AndroidBaseFrameMVVM](https://github.com/Quyunshuo/AndroidBaseFrameMVVM)提供的脚手架功能，它有详细的集成库说明，这里不再赘述。
-2.移除了Flow、EventBus、PermissionX，并接入了SmartRefreshLayout、ReadyStateSoftware、MagicIndicator、ShapeView、Lottie、Room、XXPermission库，这些库的作用在这里不再赘述
+2.移除了Flow、EventBus、PermissionX，并接入了SmartRefreshLayout、ReadyStateSoftware、MagicIndicator、ShapeView、Lottie、Room、XXPermission、UnPeekLiveData库，这些库的作用在这里不再赘述
 
 ## Demo
 
