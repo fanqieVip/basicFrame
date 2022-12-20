@@ -1,9 +1,9 @@
 package com.frame.module.demo.service
 
-import com.blankj.utilcode.util.ToastUtils
 import com.google.auto.service.AutoService
 import com.frame.basic.base.mvvm.c.ServiceBean
 import com.frame.basic.base.mvvm.c.toServiceBean
+import com.frame.basic.base.utils.ToastUtils
 import com.frame.basic.provider.service.DemoService
 import com.frame.module.demo.bean.User2Bean
 
