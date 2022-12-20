@@ -58,8 +58,8 @@ object DependencyConfig {
         const val SmartRefreshLayoutKernel = "2.0.3"        // SmartRefreshLayout核心
         const val SmartRefreshLayoutHeaderClassics = "2.0.3"// SmartRefreshLayout经典下拉刷新样式
         const val SmartRefreshLayoutFooterClassics = "2.0.3"// SmartRefreshLayout经典上拉加载样式
-        const val ReadyStateSoftware = "1.1.0"              // ReadyStateSoftware启用网络日志
-        const val ReadyStateSoftwareNoOp = "1.1.0"          // ReadyStateSoftware不启用网络日志
+        const val ReadyStateSoftware = "3.5.2"              // ReadyStateSoftware启用网络日志 https://github.com/ChuckerTeam/chucker
+        const val ReadyStateSoftwareNoOp = "3.5.2"          // ReadyStateSoftware不启用网络日志 https://github.com/ChuckerTeam/chucker
         const val MagicIndicator = "1.7.0"                  // MagicIndicator分页控件
         const val ShapeView = "8.2"                         // ShapeView圆角阴影框架 https://github.com/getActivity/ShapeView
         const val GlideWebpDecoder = "2.0.4.11.0"           // Glide加载webp格式得gif
@@ -167,8 +167,8 @@ object DependencyConfig {
         const val SmartRefreshLayoutKernel = "com.scwang.smart:refresh-layout-kernel:${Version.SmartRefreshLayoutKernel}"
         const val SmartRefreshLayoutHeaderClassics = "com.scwang.smart:refresh-header-classics:${Version.SmartRefreshLayoutHeaderClassics}"
         const val SmartRefreshLayoutFooterClassics = "com.scwang.smart:refresh-footer-classics:${Version.SmartRefreshLayoutFooterClassics}"
-        const val ReadyStateSoftware = "com.readystatesoftware.chuck:library:${Version.ReadyStateSoftware}"
-        const val ReadyStateSoftwareNoOp = "com.readystatesoftware.chuck:library-no-op:${Version.ReadyStateSoftwareNoOp}"
+        const val ReadyStateSoftware = "com.github.chuckerteam.chucker:library:${Version.ReadyStateSoftware}"
+        const val ReadyStateSoftwareNoOp = "com.github.chuckerteam.chucker:library-no-op:${Version.ReadyStateSoftwareNoOp}"
         const val MagicIndicator = "com.github.hackware1993:MagicIndicator:${Version.MagicIndicator}"
         const val ShapeView = "com.github.getActivity:ShapeView:${Version.ShapeView}"
         const val GlideWebpDecoder = "com.zlc.glide:webpdecoder:${Version.GlideWebpDecoder}"
