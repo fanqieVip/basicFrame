@@ -211,8 +211,8 @@ open class CoreVM : ViewModel(), VMLifecycle {
         onError: ((code: Int, error: String?, e: Throwable) -> Unit)? = null,
         onComplete: (() -> Unit)? = null,
         bindLifecycle: Boolean = true
-    ) {
-        launch(
+    ): Job {
+        return launch(
             call = object : VMCall {
                 override val execute: suspend CoroutineScope.() -> Unit = onExecute
                 override fun onError(code: Int, error: String?, e: Throwable) {
