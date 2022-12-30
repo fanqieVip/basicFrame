@@ -1,73 +1,93 @@
 package com.frame.basic.base.utils
 
 import android.app.ActivityManager
+import android.app.Application
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Process
-import kotlin.jvm.Throws
+import android.text.TextUtils
+import java.io.BufferedReader
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStreamReader
 
 /**
  * 进程工具类
- *
- * @author Qu Yunshuo
- * @since 3/16/21 9:06 AM
  */
 object ProcessUtils {
-
-    /**
-     * 获取当前所有进程
-     *
-     * @param context Context 上下文
-     * @return List<ActivityManager.RunningAppProcessInfo> 当前所有进程
-     */
-    fun getRunningAppProcessList(context: Context): List<ActivityManager.RunningAppProcessInfo> {
-        val activityManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        return activityManager.runningAppProcesses
+    //判断当前运行进程是否是主进程
+    fun isMainProcess(app: Application): Boolean {
+        //优先通过反射取进程名
+        var processName = getProcessNameByReflection(app)
+        if (TextUtils.isEmpty(processName)) {
+            processName = getProcessNameByCmdline()
+        }
+        if (TextUtils.isEmpty(processName)) {
+            //万不得已采用该方法，可能上架被拒（可能会被判定读取设备安装应用列表）
+            processName = getProcessNameByAM(app)
+        }
+        return app.packageName.equals(processName)
     }
 
-    /**
-     * 判断该进程id是否属于该进程名的进程
-     *
-     * @param context Context 上下文
-     * @param processId Int 进程Id
-     * @param processName String 进程名
-     * @return Boolean
-     */
-    fun isPidOfProcessName(context: Context, processId: Int, processName: String): Boolean {
-        // 遍历所有进程找到该进程id对应的进程
-        for (process in getRunningAppProcessList(context)) {
-            if (process.pid == processId) {
-                // 判断该进程id是否和进程名一致
-                return (process.processName == processName)
+    private fun getProcessNameByAM(context: Context): String? {
+        val pid = Process.myPid()
+        val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+        var processName: String? = null
+        if (manager != null) {
+            val infoList: List<ActivityManager.RunningAppProcessInfo>? = manager.runningAppProcesses
+            if (infoList != null) {
+                for (info in infoList) {
+                    if (info.pid == pid) {
+                        processName = info.processName
+                        break
+                    }
+                }
             }
         }
-        return false
+        return processName
     }
 
-    /**
-     * 获取主进程名
-     *
-     * @param context Context 上下文
-     * @return String 主进程名
-     * @throws PackageManager.NameNotFoundException if a package with the given name cannot be found on the system.
-     */
-    @Throws(PackageManager.NameNotFoundException::class)
-    fun getMainProcessName(context: Context): String {
-        val applicationInfo = context.packageManager.getApplicationInfo(context.packageName, 0)
-        return applicationInfo.processName
+    private fun getProcessNameByCmdline(): String? {
+        var processName: String? = null
+        var cmdlineReader: BufferedReader? = null
+        try {
+            cmdlineReader = BufferedReader(
+                InputStreamReader(
+                    FileInputStream("/proc/" + Process.myPid() + "/cmdline"),
+                    "iso-8859-1"
+                )
+            )
+            var c: Int
+            val sb = StringBuilder()
+            while (cmdlineReader.read().also { c = it } > 0) {
+                sb.append(c.toChar())
+            }
+            processName = sb.toString()
+        } catch (e: Exception) {
+        } finally {
+            if (cmdlineReader != null) {
+                try {
+                    cmdlineReader.close()
+                } catch (ignored: IOException) {
+                }
+            }
+        }
+        return processName
     }
 
-    /**
-     * 判断当前进程是否是主进程
-     *
-     * @param context Context 上下文
-     * @return Boolean
-     * @throws PackageManager.NameNotFoundException if a package with the given name cannot be found on the system.
-     */
-    @Throws(PackageManager.NameNotFoundException::class)
-    fun isMainProcess(context: Context): Boolean {
-        val processId = Process.myPid()
-        val mainProcessName = getMainProcessName(context)
-        return isPidOfProcessName(context, processId, mainProcessName)
+    private fun getProcessNameByReflection(app: Application): String? {
+        var processName: String? = null
+        try {
+            val loadedApkField = app.javaClass.getField("mLoadedApk")
+            loadedApkField.isAccessible = true
+            val loadedApk: Any = loadedApkField.get(app)
+            val activityThreadField = loadedApk.javaClass.getDeclaredField("mActivityThread")
+            activityThreadField.isAccessible = true
+            val activityThread: Any = activityThreadField.get(loadedApk)
+            val getProcessName = activityThread.javaClass.getDeclaredMethod("getProcessName")
+            processName = getProcessName.invoke(activityThread) as String
+        } catch (e: Exception) {
+        }
+        return processName
     }
+
 }
