@@ -661,15 +661,15 @@ internal class WakeUpCpuService : Service() {
         //注意，该文件经过严格测试，不要修改，不是任何文件都行的，（用Audacity修改压缩至最小）
         mediaPlayer = if (OSHelper.isHarmonyOs()) {
             //鸿蒙手机必须音量大于1才生效，也就只能用无声文件播放，这个文件是Audacity生成的静音音轨，用其他网上下载的经测试无效
-            MediaPlayer.create(this, R.raw.silence_voice_for_harmony).apply {
+            MediaPlayer.create(this, R.raw.silence_voice_for_harmony)?.apply {
                 setVolume(1f, 1f)
             }
         } else {
             //其他安卓手机不能使用时间过短或无实际声音的音频，否则会失效。这里的文件是30s有声音的，把音量设置到最小了，经测试手机最大音量后依然不可闻
-            MediaPlayer.create(this, R.raw.silence_voice_for_other).apply {
+            MediaPlayer.create(this, R.raw.silence_voice_for_other)?.apply {
                 setVolume(0.0001f, 0.0001f)
             }
-        }.apply {
+        }?.apply {
             isLooping = true
         }
         mediaPlayer?.start()
